@@ -34,7 +34,7 @@ model Transaction {
   amount     Int
   type       TransactionType
   fromUserId Int?
-  toUserId   String?
+  toUserId   Int?
   createdAt  DateTime        @default(now())
   user       User?           @relation(fields: [fromUserId], references: [id])
 }

@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { envVariables } from '../config/env';
 import BcryptUtil from './bcrypt';
 import { TokenHelperService } from './token-helper';
+import { JwtStrategy } from 'src/auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { TokenHelperService } from './token-helper';
       signOptions: { expiresIn: envVariables.JWT.JWTExpires as any },
     }),
   ],
-  providers: [BcryptUtil, TokenHelperService],
+  providers: [BcryptUtil, TokenHelperService, JwtStrategy],
   exports: [BcryptUtil, TokenHelperService],
 })
 export class CoreModule {}
