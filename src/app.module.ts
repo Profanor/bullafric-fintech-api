@@ -6,9 +6,10 @@ import { DatabaseModule } from '@bullafric-lib/database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WalletModule } from './wallet/wallet.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [EventEmitterModule.forRoot(), DatabaseModule, AuthModule, WalletModule, TransactionsModule],
+  imports: [EventEmitterModule.forRoot(), DatabaseModule, AuthModule, WalletModule, TransactionsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
