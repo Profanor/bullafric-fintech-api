@@ -12,19 +12,11 @@ const isProduction = env.get('NODE_ENV').required().asString() === 'production';
 //  --------------->> DATABASE CONFIG <<--------------//
 const DatabaseUrl = env.get('DATABASE_URL').required().asString();
 
-//  --------------->> SERVICE PORTS CONFIG <<--------------//
-
-//  --------------->> SERVICE IP CONFIG <<--------------//
-
-// const GAME_MEGA_TEN_SERVICE_HOST = `${GAME_MEGA_TEN_SERVICE_IP}:${GAME_MEGA_TEN_SERVICE_PORT}`;
-
 //  --------------->> JWT CONFIG <<--------------//
 const JWTSecret = env.get('JWT_SECRET').required().asString();
 const JWTExpires = env.get('JWT_ACCESS_TOKEN_EXPIRES_IN').required().asString();
 
 // //  --------------->> PAYMENT / DEPOSIT CONFIG [PAYSTACK] <<--------------//
-
-//  --------------->> EMAIL PROVIDER CONFIG <<--------------//
 
 //  --------------->> EMAIL PROVIDER CONFIG [SMTP via Nodemailer] <<--------------//
 
@@ -36,7 +28,6 @@ export const envVariables = {
   DatabaseUrl,
   isLocalInstance,
   NODE_ENV,
-  // RMQConnectionUrl,
   JWT: { JWTSecret, JWTExpires },
   PAYMENT_GATEWAYS: {},
   EMAIL: {},

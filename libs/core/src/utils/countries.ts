@@ -1962,13 +1962,17 @@ function sanitizeCountryInput(country: string) {
 
 export function getCountryShortCode(country: string): string {
   const sanitizedCountry = sanitizeCountryInput(country);
-  return (countries.find((item) => item?.name?.toLowerCase() === sanitizedCountry)?.iso2 || 'US').toLowerCase();
+  return (
+    countries.find((item) => item?.name?.toLowerCase() === sanitizedCountry)
+      ?.iso2 || 'US'
+  ).toLowerCase();
 }
 
 export function getCountryByShortCode(shortCode: string): string {
   const sanitizedCountryCode = shortCode?.toLowerCase();
   return (
-    countries.find((item) => item?.iso2?.toLowerCase() === sanitizedCountryCode)?.name || 'United States'
+    countries.find((item) => item?.iso2?.toLowerCase() === sanitizedCountryCode)
+      ?.name || 'United States'
   ).toLowerCase();
 }
 
