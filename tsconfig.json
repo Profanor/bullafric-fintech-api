@@ -17,6 +17,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "isolatedModules": true,
     "paths": {
 			"@bullafric-lib/http": ["libs/http/src"],
 			"@bullafric-lib/http/*": ["libs/http/src/*"],

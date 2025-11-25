@@ -154,6 +154,14 @@ export class AuthService {
         data: userAccount,
       };
     } catch (error) {
+      if (
+        error instanceof ConflictException ||
+        error instanceof BadRequestException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+
       console.error(error);
       throw new InternalServerErrorException('Failed to create user');
     }

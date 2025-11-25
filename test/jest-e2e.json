@@ -1,9 +1,21 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
-  "testEnvironment": "node",
+  "rootDir": "../",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.json"
+      }
+    ]
+  },
+  "moduleNameMapper": {
+  "^@bullafric-lib/database/(.*)$": "<rootDir>/libs/database/src/$1",
+  "^generated/prisma/enums$": "<rootDir>/generated/prisma/enums",
+  "^@bullafric-lib/core/(.*)$": "<rootDir>/libs/core/src/$1",
+  "^src/(.*)$": "<rootDir>/src/$1"
+},
+
+  "testEnvironment": "node"
 }
