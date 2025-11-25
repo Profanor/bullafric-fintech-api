@@ -8,17 +8,9 @@ import {
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { User } from '@bullafric-lib/core/utils/user.decorator';
-
-class FundDto {
-  amount: number;
-}
-class TransferDto {
-  toUserId: number;
-  amount: number;
-}
-class WithdrawDto {
-  amount: number;
-}
+import { FundDto } from './dto/fund.dto';
+import { TransferDto } from './dto/transfer.dto';
+import { WithdrawDto } from './dto/withdraw.dto';
 
 @ApiTags('Wallet')
 @ApiBearerAuth()

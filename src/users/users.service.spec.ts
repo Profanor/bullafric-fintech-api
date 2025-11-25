@@ -17,7 +17,7 @@ describe('UsersService', () => {
     email: 'test@example.com',
     phoneNumber: '08012345678',
     createdAt: new Date(),
-    wallets: { balance: 1000, currency: 'NGN' },
+    wallet: { balance: 1000, currency: 'NGN' },
   };
 
   const mockTransactions = [
@@ -79,8 +79,8 @@ describe('UsersService', () => {
         phoneNumber: mockUser.phoneNumber,
         createdAt: mockUser.createdAt,
         wallet: {
-          balance: mockUser.wallets.balance,
-          currency: mockUser.wallets.currency,
+          balance: mockUser.wallet.balance,
+          currency: mockUser.wallet.currency,
         },
       });
     });

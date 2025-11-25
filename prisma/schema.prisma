@@ -26,7 +26,7 @@ model Wallet {
   userId   Int    @unique
   balance  Int    @default(0)
   currency String @default("NGN")
-  user     User   @relation(fields: [userId], references: [id])
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {

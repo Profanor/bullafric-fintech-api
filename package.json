@@ -88,11 +88,11 @@
       ]
     },
     "moduleNameMapper": {
-      "^@bullafric-lib/database/(.*)$": "<rootDir>/libs/database/src/$1",
-      "^generated/prisma/(.*)$": "<rootDir>/generated/prisma/client/$1",
-      "^@bullafric-lib/core/(.*)$": "<rootDir>/libs/core/src/$1",
-      "^src/(.*)$": "<rootDir>/src/$1"
-    },
+    "^@bullafric-lib/database/(.*)$": "<rootDir>/libs/database/src/$1",
+    "^generated/prisma/(.*)$": "<rootDir>/generated/prisma/$1",
+    "^@bullafric-lib/core/(.*)$": "<rootDir>/libs/core/src/$1",
+    "^src/(.*)$": "<rootDir>/src/$1"
+  },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

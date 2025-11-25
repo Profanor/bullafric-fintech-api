@@ -12,25 +12,21 @@ export class WalletService {
   constructor(private readonly db: PrismaService) {}
 
   async getUserWalletBalance(userId: number) {
-    try {
-      const user = await this.db.user.findUnique({
-        where: { id: userId },
-        select: {
-          wallet: {
-            select: {
-              balance: true,
-              currency: true,
-            },
+    const user = await this.db.user.findUnique({
+      where: { id: userId },
+      select: {
+        wallet: {
+          select: {
+            balance: true,
+            currency: true,
           },
         },
-      });
-      if (!user || !user.wallet) {
-        throw new NotFoundException('User or wallet not found');
-      }
-      return { balance: user.wallet.balance, currency: user.wallet.currency };
-    } catch (error) {
-      console.error('An error occured getting your balance', error);
+      },
+    });
+    if (!user || !user.wallet) {
+      throw new NotFoundException('User or wallet not found');
     }
+    return { balance: user.wallet.balance, currency: user.wallet.currency };
   }
 
   async fund(userId: number, amount: number) {
@@ -58,7 +54,7 @@ export class WalletService {
       };
     } catch (error: any) {
       if (error.code === 'P2025') {
-        // Prisma "Record not found"
+        // prisma "Record not found"
         throw new NotFoundException('Wallet not found');
       }
       console.error('Error funding wallet', error);
@@ -89,7 +85,16 @@ export class WalletService {
         data: { balance: { increment: amount } },
       });
 
-      // create transaction record
+      // for transfer: log sender and recipient separately
+      await tx.transaction.create({
+        data: {
+          amount,
+          type: TransactionType.TRANSFER,
+          fromUserId,
+          toUserId,
+        },
+      });
+
       await tx.transaction.create({
         data: {
           amount,
@@ -123,30 +128,25 @@ export class WalletService {
 
     const updatedWallet = await this.db.$transaction(async (tx) => {
       // attempt to decrement only if balance is enough
-      const w = await tx.wallet.updateMany({
-        where: {
-          userId,
-          balance: { gte: amount }, // only update if enough balance
-        },
-        data: {
-          balance: { decrement: amount },
-        },
+      const result = await tx.wallet.updateMany({
+        where: { userId, balance: { gte: amount } },
+        data: { balance: { decrement: amount } },
       });
 
-      if (w.count === 0) {
-        throw new BadRequestException('Insufficient funds');
+      if (result.count === 0) {
+        throw new BadRequestException('Insufficient funds or wallet not found');
       }
 
       await tx.transaction.create({
         data: { amount, type: TransactionType.WITHDRAW, fromUserId: userId },
       });
 
-      // return the latest wallet state
+      // return the updated wallet state
       return tx.wallet.findUnique({ where: { userId } });
     });
 
     if (!updatedWallet) {
-      throw new NotFoundException('wallet not found');
+      throw new NotFoundException('Wallet not found');
     }
 
     return {
