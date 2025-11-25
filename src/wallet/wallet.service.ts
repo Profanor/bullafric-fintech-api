@@ -16,7 +16,7 @@ export class WalletService {
       const user = await this.db.user.findUnique({
         where: { id: userId },
         select: {
-          wallets: {
+          wallet: {
             select: {
               balance: true,
               currency: true,
@@ -24,10 +24,10 @@ export class WalletService {
           },
         },
       });
-      if (!user || !user.wallets) {
+      if (!user || !user.wallet) {
         throw new NotFoundException('User or wallet not found');
       }
-      return { balance: user.wallets.balance, currency: user.wallets.currency };
+      return { balance: user.wallet.balance, currency: user.wallet.currency };
     } catch (error) {
       console.error('An error occured getting your balance', error);
     }
@@ -37,9 +37,6 @@ export class WalletService {
     if (amount <= 0) throw new BadRequestException('Amount must be positive');
 
     try {
-      const wallet = await this.db.wallet.findUnique({ where: { userId } });
-      if (!wallet) throw new NotFoundException('Wallet not found');
-
       const updatedWallet = await this.db.$transaction(async (tx) => {
         const w = await tx.wallet.update({
           where: { userId },
@@ -59,7 +56,11 @@ export class WalletService {
           currency: updatedWallet.currency,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        // Prisma "Record not found"
+        throw new NotFoundException('Wallet not found');
+      }
       console.error('Error funding wallet', error);
       throw new InternalServerErrorException('Failed to fund wallet');
     }
@@ -67,90 +68,92 @@ export class WalletService {
 
   async transfer(fromUserId: number, toUserId: number, amount: number) {
     if (amount <= 0) throw new BadRequestException('Amount must be positive');
-
     if (fromUserId === toUserId)
       throw new BadRequestException('You cannot transfer to yourself');
 
-    try {
-      const [sender, recipient] = await Promise.all([
-        this.db.wallet.findUnique({ where: { userId: fromUserId } }),
-        this.db.wallet.findUnique({ where: { userId: toUserId } }),
-      ]);
+    const result = await this.db.$transaction(async (tx) => {
+      const recipient = await tx.user.findUnique({ where: { id: toUserId } });
+      if (!recipient) throw new NotFoundException('Recipient user not found');
 
-      if (!sender || !recipient)
-        throw new NotFoundException('Sender or recipient wallet not found');
+      // decrement sender balance atomically
+      const updatedSender = await tx.wallet.updateMany({
+        where: { userId: fromUserId, balance: { gte: amount } },
+        data: { balance: { decrement: amount } },
+      });
+      if (updatedSender.count === 0)
+        throw new BadRequestException('Insufficient funds or sender not found');
 
-      if (sender.balance < amount)
-        throw new BadRequestException('Insufficient funds');
-
-      const result = await this.db.$transaction(async (tx) => {
-        const updatedSender = await tx.wallet.update({
-          where: { userId: fromUserId },
-          data: { balance: { decrement: amount } },
-        });
-
-        const updatedRecipient = await tx.wallet.update({
-          where: { userId: toUserId },
-          data: { balance: { increment: amount } },
-        });
-
-        await tx.transaction.create({
-          data: {
-            amount,
-            type: TransactionType.TRANSFER,
-            fromUserId,
-            toUserId,
-          },
-        });
-
-        return { updatedSender, updatedRecipient };
+      // increment recipient balance
+      const updatedRecipient = await tx.wallet.update({
+        where: { userId: toUserId },
+        data: { balance: { increment: amount } },
       });
 
-      return {
-        success: {
-          senderBalance: result.updatedSender.balance,
-          recipientBalance: result.updatedRecipient.balance,
-          currency: result.updatedSender.currency,
+      // create transaction record
+      await tx.transaction.create({
+        data: {
+          amount,
+          type: TransactionType.TRANSFER,
+          fromUserId,
+          toUserId,
         },
-      };
-    } catch (error) {
-      console.error('Error during transfer', error);
-      throw new InternalServerErrorException('Failed to transfer funds');
+      });
+
+      const senderWallet = await tx.wallet.findUnique({
+        where: { userId: fromUserId },
+      });
+      return { senderWallet, recipientWallet: updatedRecipient };
+    });
+
+    if (!result || !result.senderWallet || !result.recipientWallet) {
+      throw new NotFoundException('Wallet not found');
     }
+
+    return {
+      success: {
+        senderBalance: result.senderWallet.balance,
+        recipientBalance: result.recipientWallet.balance,
+        currency: result.senderWallet.currency,
+      },
+    };
   }
 
   async withdraw(userId: number, amount: number) {
     if (amount <= 0) throw new BadRequestException('Amount must be positive');
 
-    try {
-      const wallet = await this.db.wallet.findUnique({ where: { userId } });
-      if (!wallet) throw new NotFoundException('Wallet not found');
-
-      if (wallet.balance < amount)
-        throw new BadRequestException('Insufficient funds');
-
-      const updatedWallet = await this.db.$transaction(async (tx) => {
-        const w = await tx.wallet.update({
-          where: { userId },
-          data: { balance: { decrement: amount } },
-        });
-
-        await tx.transaction.create({
-          data: { amount, type: TransactionType.WITHDRAW, fromUserId: userId },
-        });
-
-        return w;
+    const updatedWallet = await this.db.$transaction(async (tx) => {
+      // attempt to decrement only if balance is enough
+      const w = await tx.wallet.updateMany({
+        where: {
+          userId,
+          balance: { gte: amount }, // only update if enough balance
+        },
+        data: {
+          balance: { decrement: amount },
+        },
       });
 
-      return {
-        success: {
-          balance: updatedWallet.balance,
-          currency: updatedWallet.currency,
-        },
-      };
-    } catch (error) {
-      console.error('Error during withdrawal', error);
-      throw new InternalServerErrorException('Failed to withdraw funds');
+      if (w.count === 0) {
+        throw new BadRequestException('Insufficient funds or wallet not found');
+      }
+
+      await tx.transaction.create({
+        data: { amount, type: TransactionType.WITHDRAW, fromUserId: userId },
+      });
+
+      // return the latest wallet state
+      return tx.wallet.findUnique({ where: { userId } });
+    });
+
+    if (!updatedWallet) {
+      throw new NotFoundException('wallet not found');
     }
+
+    return {
+      success: {
+        balance: updatedWallet.balance,
+        currency: updatedWallet.currency,
+      },
+    };
   }
 }

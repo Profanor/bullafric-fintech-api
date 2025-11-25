@@ -17,7 +17,7 @@ model User {
   updatedAt        DateTime      @updatedAt
   verificationCode String?
   otpExpiryTime    String?
-  wallets          Wallet?
+  wallet           Wallet?
   transactions     Transaction[]
 }
 

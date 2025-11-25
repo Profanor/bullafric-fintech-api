@@ -18,7 +18,7 @@ export class UsersService {
         email: true,
         phoneNumber: true,
         createdAt: true,
-        wallets: {
+        wallet: {
           select: {
             balance: true,
             currency: true,
@@ -27,7 +27,7 @@ export class UsersService {
       },
     });
 
-    if (!user || !user.wallets) throw new NotFoundException('User not found');
+    if (!user || !user.wallet) throw new NotFoundException('User not found');
 
     return {
       id: user.id,
@@ -36,8 +36,8 @@ export class UsersService {
       phoneNumber: user.phoneNumber,
       createdAt: user.createdAt,
       wallet: {
-        balance: user.wallets.balance,
-        currency: user.wallets.currency,
+        balance: user.wallet.balance,
+        currency: user.wallet.currency,
       },
     };
   }
