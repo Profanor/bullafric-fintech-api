@@ -53,3 +53,24 @@ npx prisma generate
 # Build the project
 npm run build
 ```
+
+## Running Tests
+
+This project includes both **unit tests** and **end-to-end (E2E) tests** using **Jest**.
+
+### Run all tests
+
+```bash
+npm run test
+```
+
+### Run only E2E tests
+```bash
+npm run test:e2e
+```
+
+### API Documentation
+
+- Once the application is running, access Swagger documentation at:
+
+http://localhost:3001/api/docs
