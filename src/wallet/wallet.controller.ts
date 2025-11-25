@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -27,19 +27,19 @@ class WithdrawDto {
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
-  @Get(':userId/balance')
+  @Get('balance')
   @ApiOperation({ summary: 'Get user wallet balance' })
   @ApiResponse({
     status: 200,
     description: 'Wallet balance retrieved successfully.',
   })
-  async getBalance(@Param('userId') userId: number) {
+  async getBalance(@User('userId') userId: number) {
     return this.walletService.getUserWalletBalance(userId);
   }
 
-  @Post(':userId/fund')
+  @Post('fund')
   @ApiOperation({ summary: 'Fund user wallet from thin air/mock source' })
-  async fund(@Param('userId') userId: number, @Body() body: FundDto) {
+  async fund(@User('userId') userId: number, @Body() body: FundDto) {
     return this.walletService.fund(userId, body.amount);
   }
 
@@ -51,9 +51,9 @@ export class WalletController {
     return this.walletService.transfer(fromUserId, body.toUserId, body.amount);
   }
 
-  @Post(':userId/withdraw')
+  @Post('withdraw')
   @ApiOperation({ summary: 'Withdraw funds from wallet' })
-  async withdraw(@Param('userId') userId: number, @Body() body: WithdrawDto) {
+  async withdraw(@User('userId') userId: number, @Body() body: WithdrawDto) {
     return this.walletService.withdraw(userId, body.amount);
   }
 }

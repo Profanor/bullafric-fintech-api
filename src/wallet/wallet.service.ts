@@ -134,7 +134,7 @@ export class WalletService {
       });
 
       if (w.count === 0) {
-        throw new BadRequestException('Insufficient funds or wallet not found');
+        throw new BadRequestException('Insufficient funds');
       }
 
       await tx.transaction.create({

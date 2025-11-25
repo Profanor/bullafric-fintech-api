@@ -116,7 +116,7 @@ describe('AuthService', () => {
       mockPrisma.user.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.loginUser({ username: 'nouser', password: 'pass' }),
+        service.loginUser({ email: 'nouser', password: 'pass' }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -125,7 +125,7 @@ describe('AuthService', () => {
       mockBcrypt.compare.mockResolvedValue(false);
 
       await expect(
-        service.loginUser({ username: 'testuser', password: 'wrongpass' }),
+        service.loginUser({ email: 'testuser', password: 'wrongpass' }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -136,7 +136,7 @@ describe('AuthService', () => {
       mockPrisma.user.findUnique.mockResolvedValue(mockUser);
 
       const result = await service.loginUser({
-        username: 'testuser',
+        email: 'testuser',
         password: 'pass',
       });
 

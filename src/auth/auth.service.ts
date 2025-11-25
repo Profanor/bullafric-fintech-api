@@ -90,11 +90,11 @@ export class AuthService {
 
   async loginUser(payload: LoginDto) {
     try {
-      const { username, password } = payload;
+      const { email, password } = payload;
 
       const userExists = await this.db.user.findFirst({
         where: {
-          OR: [{ username }, { phoneNumber: username }, { email: username }],
+          OR: [{ email }, { phoneNumber: email }, { email: email }],
         },
       });
 
@@ -142,7 +142,7 @@ export class AuthService {
           username: true,
           email: true,
           phoneNumber: true,
-          wallets: {
+          wallet: {
             select: { balance: true, currency: true },
           },
         },
